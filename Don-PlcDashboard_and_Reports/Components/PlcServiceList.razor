@@ -1,0 +1,151 @@
+﻿@inject PlcService plcService
+@inject RaportareDbContext context
+<h2>PlcServiceList</h2>
+
+<p>
+    <button class="btn btn-primary" @onclick="CretePlcList">Create Plc List</button>
+    <button class="btn btn-danger" @onclick="(() => plcService.ListPlcs.Clear())">Clear Plc List</button>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+            <th>
+                IsEnable
+            </th>
+            <th>
+                Nume
+            </th>
+            <th>
+                Ip
+            </th>
+            <th>
+                IsConnected
+            </th>
+            <th>
+                <button class="btn btn-primary" @onclick="ConnectAllPlcs">Connect All</button>
+            </th>
+            <th>
+                <button class="btn btn-danger" @onclick="DisconnectAllPlcs">Disconnect All</button>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var plc in plcServiceList)
+        {
+        <tr>
+            <td>
+                <button class="btn btn-outline-primary" @onclick="(() => selectedPlc=plc)">TagsList</button>
+            </td>
+            <td>
+                <input class="form-control" type="checkbox" data-val-required="The IsEnable field is required." id="IsEnable" name="IsEnable" @bind="@plc.IsEnable">
+            </td>
+            <td>
+                @plc.Name
+            </td>
+            <td>
+                @plc.Ip
+            </td>
+            <td>
+                @plc.PlcObject.IsConnected
+            </td>
+            <td>
+                <button class="btn @(plc.PlcObject.IsConnected?"btn-success":"btn-outline-success")" @onclick="(() => plcService.ConnectPlc(plc.PlcObject))">Connect Plc</button>
+            </td>
+            <td>
+                <button class="btn @(!plc.PlcObject.IsConnected?"btn-danger":"btn-outline-danger")" @onclick="(() => plcService.DisconnectPlc(plc.PlcObject))">Disconnect Plc</button>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+
+<h2>Tag List for @selectedPlc.Name</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Adress
+            </th>
+            <th>
+                DataType
+            </th>
+            <th>
+                Value
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var tag in selectedPlc.TagsList)
+        {
+            <tr>
+                <td>
+                    @tag.Name
+                </td>
+                <td>
+                    @tag.Adress
+                </td>
+                <td>
+                    @tag.DataType
+                </td>
+                <td>
+                    @tag.Value
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    // plcServiceList from PlcServicePlcList
+    public List<PlcModel> plcServiceList;
+    // Selcted Plc
+    public PlcModel selectedPlc;
+    // Initialize List of Plc from DbContext Plc
+    protected override void OnInitialized()
+    {
+        selectedPlc = new PlcModel { Name = "None", TagsList = new List<TagModel>() };
+        plcServiceList = plcService.ListPlcs;
+        RefreshUi();
+    }
+    // Click event create plc list
+    private async Task CretePlcList()
+    {
+        await plcService.InitializeListOfPlcAsync(context);
+    }
+
+    // Click event Connect all Plcs
+    private void ConnectAllPlcs()
+    {
+        foreach (var plc in plcService.ListPlcs)
+        {
+            plcService.ConnectPlc(plc.PlcObject);
+        }
+    }
+    // Click event Disconnect all Plcs
+    private void DisconnectAllPlcs()
+    {
+        foreach (var plc in plcService.ListPlcs)
+        {
+            plcService.DisconnectPlc(plc.PlcObject);
+        }
+    }
+
+    // For refrehing UI
+    // Refresh Ui
+    void RefreshUi()
+    {
+        var timer = new Timer(new TimerCallback(_ =>
+        {
+            //Console.WriteLine("Din timer");
+
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        }), null, 1000, 1000);
+    }
+}

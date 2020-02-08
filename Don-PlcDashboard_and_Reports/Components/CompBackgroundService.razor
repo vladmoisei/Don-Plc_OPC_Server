@@ -1,0 +1,52 @@
+﻿@inject TimedService backgroundWork
+<h2>BackgroundService</h2>
+
+<section id="backgroundService">
+    <div class="row">
+    </div>
+    @*<div class="row">  *@
+        <h4 id="ceas">Ceas: @backgroundWorkService.LastTimeRunBackgroundWork.ToString("hh:mm:ss")</h4>
+        <h4> Service is Started: @backgroundWork.IsRunnungBackgroundService</h4>
+        <h4> Refresh Time Interval: <input type="number" @bind="@backgroundWork.ReadingTimeInterval" /></h4>
+    @*</div>*@
+    <div class="row">
+        <button class="col-md-6 btn @(backgroundWork.IsRunnungBackgroundService?"btn-success":"btn-outline-success")" @onclick="StartBackgroundService">Start Backgorund Service</button>
+        <button class="col-md-6 btn @(!backgroundWork.IsRunnungBackgroundService?"btn-danger":"btn-outline-danger")" @onclick="StopBackgroundService">Stop Backgorund Service</button>
+    </div>
+</section>
+
+@code {
+    TimedService backgroundWorkService;
+    protected override void OnInitialized()
+    {
+        backgroundWorkService = backgroundWork as TimedService;
+        RefreshUi();
+    }
+
+    // Click Event Start service
+    public void StartBackgroundService()
+    {
+        backgroundWork.StartAsync(new System.Threading.CancellationToken(false));
+    }
+
+    // Click Event Start service
+    public void StopBackgroundService()
+    {
+        backgroundWork.StopAsync(new System.Threading.CancellationToken());
+    }
+
+    // Refresh Ui
+    void RefreshUi()
+    {
+        var timer = new Timer(new TimerCallback(_ =>
+        {
+            //Console.WriteLine("Din timer");
+
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        }), null, 1000, 1000);
+    }
+
+}

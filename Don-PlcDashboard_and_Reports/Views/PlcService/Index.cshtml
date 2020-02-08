@@ -1,0 +1,21 @@
+﻿@model IEnumerable<Don_PlcDashboard_and_Reports.Models.PlcModel>
+@using Don_PlcDashboard_and_Reports.Components
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<component type="typeof(CompBackgroundService)" render-mode="ServerPrerendered" />
+<component type="typeof(PlcServiceList)" render-mode="ServerPrerendered" />
+
+@* Scripturi *@
+@section scripts {
+    @*<script src="~/js/site.js"></script>*@
+    @*Resetare automata continut pagina pentru a nu intra in standby*@
+    <script type="text/javascript">
+        function autoRefreshPage() {
+            window.location = window.location.href;
+        }
+        setInterval('autoRefreshPage()', 60000); // Resetare la 60 secunde
+    </script>
+}
